@@ -241,6 +241,17 @@ class DirectTestCase(_MarkdownTestCase):
                 plain_html = md.convert("# Heading\n")
                 self.assertEqual(plain_html, "<h1>Heading</h1>\n")
 
+    def test_escape_tables_reset_between_conversions(self):
+        md = markdown2.Markdown()
+        md.convert("[a link](https://example.com/page) and `some code`")
+        sizes = (len(md._escape_table), len(md._code_table))
+        md.convert("[a link](https://example.com/other) and `other code`")
+        self.assertEqual((len(md._escape_table), len(md._code_table)), sizes)
+        # A URL from an earlier document must not affect a later one.
+        html = md.convert(r"Type \https://example.com/page to see it.")
+        self.assertEqual(
+            html, '<p>Type \\https://example.com/page to see it.</p>\n')
+
     def test_footnote_numbers_reset_between_conversions(self):
         md = markdown2.Markdown(extras=["footnotes"])
         md.convert("First[^first], second[^second].\n\n"

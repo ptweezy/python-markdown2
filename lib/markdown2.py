@@ -382,11 +382,7 @@ class Markdown:
         self._outdent_re = re.compile(r'^(\t|[ ]{1,%d})' % tab_width, re.M)
         self.cli = cli
 
-        self._escape_table = g_escape_table.copy()
-        self._code_table = {}
-        if "smarty-pants" in self.extras:
-            self._escape_table['"'] = _hash_text('"')
-            self._escape_table["'"] = _hash_text("'")
+        self._reset_escape_tables()
 
     def reset(self):
         self.urls = {}
@@ -395,8 +391,18 @@ class Markdown:
         self.html_spans = {}
         self.list_level = 0
         self.extras = self._instance_extras.copy()
+        self._reset_escape_tables()
         self._setup_extras()
         self._toc = []
+
+    def _reset_escape_tables(self):
+        # _protect_url() and _encode_code() add to these tables during a
+        # conversion, so each document starts from the base tables.
+        self._escape_table = g_escape_table.copy()
+        self._code_table = {}
+        if "smarty-pants" in self.extras:
+            self._escape_table['"'] = _hash_text('"')
+            self._escape_table["'"] = _hash_text("'")
 
     def _setup_toc(self):
         if "toc" in self.extras:
